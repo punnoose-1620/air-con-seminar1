@@ -87,7 +87,9 @@ temp(inp(C), T) :- comp(C), type(C, valve), nab(C), temp(out(C), T), flow(inp(C)
 #const n = 1.
 { ab(C); nab(C) } = 1 :- comp(C).
 % Add one more constraint to ensure that the number of abnormal components is less than or equal to n
-n { ab(C) : comp(C) } n.
+#minimize { 1@1, C : ab(C), comp(C) }.
 
 % Display
+t_out(T) :- temp(air_out, T).
+#show t_out/1.
 #show ab/1.
