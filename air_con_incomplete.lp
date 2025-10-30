@@ -74,20 +74,22 @@ temp(inp(C), T) :- comp(C), type(C, switch), nab(C), temp(out2(C), T), flow(inp(
 % depending on threeway_in, the output is either off or the input from the heater or cooler is passed through
 % Add the missing propagation rules for valve management completion
 flow(out(C), off) :- comp(C), type(C, valve), nab(C), threeway_in(off).
-flow(out(C), F) :- comp(C), type(C, valve), nab(C), flow(inp(C), F), threeway_in(heat).
-flow(out(C), F) :- comp(C), type(C, valve), nab(C), flow(inp(C), F), threeway_in(cool).
-temp(out(C), T) :- comp(C), type(C, valve), nab(C), temp(inp(C), T), flow(out(C), on), threeway_in(heat).
-temp(out(C), T) :- comp(C), type(C, valve), nab(C), temp(inp(C), T), flow(out(C), on), threeway_in(cool).
-flow(inp(C), F) :- comp(C), type(C, valve), nab(C), flow(out(C), F), threeway_in(heat).
-flow(inp(C), F) :- comp(C), type(C, valve), nab(C), flow(out(C), F), threeway_in(cool).
-temp(inp(C), T) :- comp(C), type(C, valve), nab(C), temp(out(C), T), flow(inp(C), on), threeway_in(heat).
-temp(inp(C), T) :- comp(C), type(C, valve), nab(C), temp(out(C), T), flow(inp(C), on), threeway_in(cool).
+flow(out(C), F) :- comp(C), type(C, valve), nab(C), flow(inp1(C), F), threeway_in(heat).
+flow(out(C), F) :- comp(C), type(C, valve), nab(C), flow(inp2(C), F), threeway_in(cool).
+flow(inp1(C), F) :- comp(C), type(C, valve), nab(C), flow(out(C), F), threeway_in(heat).
+flow(inp2(C), F) :- comp(C), type(C, valve), nab(C), flow(out(C), F), threeway_in(cool).
+temp(out(C), T) :- comp(C), type(C, valve), nab(C), temp(inp1(C), T), threeway_in(heat), flow(out(C), on).
+temp(out(C), T) :- comp(C), type(C, valve), nab(C), temp(inp2(C), T), threeway_in(cool), flow(out(C), on).
+temp(inp1(C), T) :- comp(C), type(C, valve), nab(C), temp(out(C), T), flow(out(C), on), threeway_in(heat).
+temp(inp2(C), T) :- comp(C), type(C, valve), nab(C), temp(out(C), T), flow(out(C), on), threeway_in(cool).
 
 % search for diagnoses of fixed size
 #const n = 1.
 { ab(C); nab(C) } = 1 :- comp(C).
 % Add one more constraint to ensure that the number of abnormal components is less than or equal to n
-n { ab(C) : comp(C) } n.
+% n { ab(C) : comp(C) } n.
+no_ab(N) :- N = #count{ C :ab(C)}.
+:- no_ab(N), N != n.
 
 % Setting first observations from Canvas
 ambient_temp(25).
@@ -97,6 +99,22 @@ flow(air_in,on).
 temp(air_in,27).
 temp(air_out, 25).
 flow(air_out, on).
+
+% Setting additional measurements from Canvas
+% Additional Measurement 2: input to valve
+% flow(inp(v), on).
+% temp(inp(v), 25).
+
+% Additional Measurement 3: switch out2 is passing through correctly
+% flow(out2(s), on).
+% temp(out2(s), 27).
+
+% Setting Alternate Diagnosis Approach from Canvas
+% Measurements at the cooler
+% flow(inp(c), on).
+% temp(inp(c), 27).
+% flow(out(c), on).
+% temp(out(c), 25).
 
 % Display
 % t_out(T) :- temp(air_out, T).
