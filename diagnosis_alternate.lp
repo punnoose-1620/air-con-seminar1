@@ -1,8 +1,3 @@
-% Direct cooler test (diagnosis_3)
-threeway_in(cool).
-scale_in(2).
-ambient_temp(25).
-
 % Measurements at the cooler
 flow(inp(c), on).
 temp(inp(c), 27).

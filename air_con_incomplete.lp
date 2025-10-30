@@ -13,8 +13,8 @@ conn(air_in, inp(s)).
 conn(out1(s), inp(h)).
 % Additional Conditions for connection modelling
 conn(out2(s), inp(c)).
-conn(out(h), inp(v)).
-conn(out(c), inp(v)).
+conn(out(h), inp1(v)).
+conn(out(c), inp2(v)).
 conn(out(v), air_out).
 
 % propagation of values (air flow 'flow/2' and temperature 'temp/2'):
@@ -24,9 +24,9 @@ conn(out(v), air_out).
 flow(P2, F) :- conn(P1, P2), flow(P1, F).
 flow(P1, F) :- conn(P1, P2), flow(P2, F).
 % Additional Propagation rules for temperature management completion
-temp(P2, T) :- conn(P1, P2), temp(P1, T), flow(P1, on).
-temp(P1, T) :- conn(P1, P2), temp(P2, T), flow(P2, on).
-temp(P, T) :- ambient_temp(T), flow(P, off).
+temp(P2,T) :- conn(P1,P2), temp(P1,T), flow(P1,on).
+temp(P1,T) :- conn(P1,P2), temp(P2,T), flow(P2,on).
+temp(P,T) :- flow(P,off), ambient_temp(T).
 
 % integrity constraints:
 % we can't have different flows or temperatures at the same point
@@ -48,8 +48,8 @@ temp(inp(C), T - S*3) :- comp(C), type(C, heater), nab(C), temp(out(C), T), flow
 % then, the temperature decreases by the scale factor times 3
 % if air is not flowing into the cooler, air is not flowing out of the cooler
 % Add more propagation rules for temperature cooler management completion
-flow(out(C), F) :- comp(C), type(C, cooler), nab(C), flow(inp(C), F).
-flow(inp(C), F) :- comp(C), type(C, cooler), nab(C), flow(out(C), F).
+flow(out(C), F) :- comp(C), type(C,cooler), nab(C), flow(inp(C), F).
+flow(inp(C), F) :- comp(C), type(C,cooler), nab(C), flow(out(C), F).
 temp(out(C), T - S*3) :- comp(C), type(C, cooler), nab(C), temp(inp(C), T), flow(inp(C), on), scale_in(S).
 temp(inp(C), T + S*3) :- comp(C), type(C, cooler), nab(C), temp(out(C), T), flow(out(C), on), scale_in(S).
 
@@ -87,9 +87,18 @@ temp(inp(C), T) :- comp(C), type(C, valve), nab(C), temp(out(C), T), flow(inp(C)
 #const n = 1.
 { ab(C); nab(C) } = 1 :- comp(C).
 % Add one more constraint to ensure that the number of abnormal components is less than or equal to n
-#minimize { 1@1, C : ab(C), comp(C) }.
+n { ab(C) : comp(C) } n.
+
+% Setting first observations from Canvas
+ambient_temp(25).
+threeway_in(cool).
+scale_in(2).
+flow(air_in,on).
+temp(air_in,27).
+temp(air_out, 25).
+flow(air_out, on).
 
 % Display
-t_out(T) :- temp(air_out, T).
-#show t_out/1.
+% t_out(T) :- temp(air_out, T).
+% #show t_out/1.
 #show ab/1.
